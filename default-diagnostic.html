@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Default Audit — Multiplayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#192222; --ink2:#1F2929; --ink3:#27302f; --charcoal:#192222;
+    --yellow:#FFEB36; --yellow-press:#F0DC2E;
+    --cream:#F4F4F0; --grey:#5E6464; --mute:#C9CCCC; --faint:#8C9292;
+    --line:rgba(255,255,255,.14); --line2:rgba(255,255,255,.08);
+    --line-dark:rgba(25,34,34,.34);
+    --display:'Anton',Impact,'Arial Black',sans-serif;
+    --body:'Inter',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);font-weight:400;color:#fff;background:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 40px}
+  h1,h2,h3,.display{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-height:.98;text-transform:none}
+  a{color:inherit;text-decoration:none}
+  img,svg{display:block}
+  .eyebrow{font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.005em;color:#fff}
+  .bubble{display:inline-block;background:var(--yellow);color:var(--charcoal);font-family:var(--body);font-weight:500;font-size:15px;padding:11px 20px;border-radius:18px 18px 18px 4px}
+
+  /* nav + progress */
+  nav{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(25,34,34,.94);backdrop-filter:blur(8px);z-index:30}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:80px;gap:24px}
+  .brand-mark{height:24px;width:auto}
+  .steps{display:flex;gap:8px;align-items:center}
+  .stepdot{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:flex;align-items:center;gap:8px}
+  .stepdot .n{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;color:var(--faint);font-weight:700}
+  .stepdot.active .n{background:var(--yellow);border-color:var(--yellow);color:var(--charcoal)}
+  .stepdot.done .n{border-color:#46514f;color:#fff}
+  .stepdot.active{color:#fff}
+  .stepsep{width:16px;height:1px;background:var(--line)}
+  @media(max-width:860px){.steps .stepdot span,.stepsep{display:none}}
+
+  main{padding:64px 0 110px;min-height:calc(100vh - 80px)}
+  .screen{display:none;animation:fade .4s ease}
+  .screen.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .lead{font-size:19px;color:var(--mute);max-width:680px;margin-top:24px;line-height:1.45}
+  h2.big{font-size:clamp(48px,8vw,96px);margin-top:18px}
+  h2.mid{font-size:clamp(38px,6vw,68px);margin-top:14px}
+  .kick{margin-top:10px}
+
+  .btn{font-family:var(--body);font-weight:700;font-size:16px;padding:18px 32px;border:1px solid var(--yellow);background:var(--yellow);color:var(--charcoal);border-radius:4px;cursor:pointer;transition:background .15s,border-color .15s;display:inline-flex;align-items:center;gap:11px}
+  .btn:hover{background:var(--yellow-press);border-color:var(--yellow-press)}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .btn .arr{font-weight:400;font-size:18px;line-height:1}
+  .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.45)}
+  .btn.ghost:hover{background:rgba(255,255,255,.07)}
+  .tlink{display:inline-flex;flex-direction:column;font-weight:700;font-size:16px;color:#fff;cursor:pointer;background:none;border:none;font-family:var(--body)}
+  .tlink::after{content:"";height:1px;background:currentColor;margin-top:9px;opacity:.85}
+  .navrow{display:flex;justify-content:space-between;align-items:center;margin-top:56px;gap:18px;flex-wrap:wrap}
+  .hint{font-size:13.5px;color:var(--faint)}
+
+  /* form */
+  .form{display:grid;grid-template-columns:1fr 1fr;gap:24px 30px;margin-top:44px;max-width:760px}
+  .field{display:flex;flex-direction:column;gap:9px}
+  .field.full{grid-column:1 / -1}
+  label{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--mute)}
+  label .req{color:var(--yellow)}
+  input,select,textarea{font-family:var(--body);font-weight:400;font-size:16px;color:#fff;background:var(--ink2);border:1px solid var(--line);border-radius:8px;padding:15px 17px;outline:none;transition:border-color .15s}
+  input:focus,select:focus,textarea:focus{border-color:var(--yellow)}
+  select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238C9292' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 16px center}
+  textarea{resize:vertical;min-height:84px}
+  .err{font-size:12.5px;color:#FFB3A6;display:none}
+  .err.show{display:block}
+  .privacy{grid-column:1/-1;font-size:13px;color:var(--faint);margin-top:-2px}
+
+  /* symptom grid */
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:40px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}.form{grid-template-columns:1fr}}
+  .tile{position:relative;border:1px solid var(--line);background:var(--ink2);border-radius:16px;padding:24px 24px 24px 60px;cursor:pointer;transition:border-color .15s,background .15s;user-select:none}
+  .tile:hover{border-color:#46514f}
+  .tile .box{position:absolute;left:22px;top:24px;width:24px;height:24px;border:1.5px solid var(--faint);border-radius:6px;display:grid;place-items:center;transition:.15s}
+  .tile .box svg{opacity:0;width:15px;height:15px}
+  .tile.sel{border-color:var(--yellow);background:#232b1d}
+  .tile.sel .box{background:var(--yellow);border-color:var(--yellow)}
+  .tile.sel .box svg{opacity:1}
+  .tile h4{font-family:var(--body);font-weight:600;font-size:17px;color:#fff}
+  .countbar{margin-top:26px;font-size:14.5px;color:var(--mute)}
+  .countbar b{color:var(--yellow)}
+
+  /* unpack: layer bars */
+  .layers{margin-top:44px;display:flex;flex-direction:column;gap:22px}
+  .layer{border:1px solid var(--line);border-radius:18px;padding:26px 28px;background:var(--ink2)}
+  .layer .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+  .layer .name{font-family:var(--display);font-size:30px}
+  .layer .q{font-size:14.5px;color:var(--faint)}
+  .meter{height:10px;border-radius:5px;background:var(--ink3);margin-top:16px;overflow:hidden}
+  .meter > i{display:block;height:100%;background:var(--yellow);border-radius:5px;width:0;transition:width .7s cubic-bezier(.3,.8,.3,1)}
+  .layer .hits{margin-top:18px;display:flex;flex-direction:column;gap:11px}
+  .hit{display:flex;gap:12px;font-size:15px;color:var(--mute)}
+  .hit::before{content:"";flex:none;width:7px;height:7px;background:var(--yellow);margin-top:8px;border-radius:1px}
+  .hit b{color:#fff;font-weight:700}
+
+  /* calibrate */
+  .calib{margin-top:40px;display:flex;flex-direction:column;gap:20px}
+  .crow{border:1px solid var(--line);border-radius:18px;padding:26px 28px;background:var(--ink2)}
+  .crow .lab{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .crow .def{font-family:var(--body);font-weight:600;font-size:18px;margin:8px 0 5px}
+  .crow .cost{font-size:14.5px;color:var(--faint)}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:18px 30px;margin-top:20px}
+  @media(max-width:680px){.controls{grid-template-columns:1fr}}
+  .ctrl .ctitle{font-size:13.5px;color:var(--mute);margin-bottom:9px;display:flex;justify-content:space-between}
+  .ctrl .ctitle .qmark{color:var(--faint);cursor:help}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .seg button{flex:1;font-family:var(--body);font-weight:500;font-size:14px;color:var(--mute);background:transparent;border:none;border-right:1px solid var(--line);padding:12px 6px;cursor:pointer;transition:.12s}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--yellow);color:var(--charcoal);font-weight:700}
+
+  /* results */
+  .resgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;margin-top:44px;align-items:start}
+  @media(max-width:880px){.resgrid{grid-template-columns:1fr}}
+  .matrix-wrap{border:1px solid var(--line);border-radius:20px;padding:24px;background:var(--ink2)}
+  .matrix-cap{font-size:12.5px;color:var(--faint);margin-top:14px;text-align:center}
+  .ranklist{display:flex;flex-direction:column;gap:15px}
+  .rank{border:1px solid var(--line);border-radius:18px;padding:22px 24px;background:var(--ink2);position:relative}
+  .rank.first{border-color:var(--yellow);background:#232b1d}
+  .rank .rtop{display:flex;align-items:center;gap:12px}
+  .rank .badge{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--charcoal);background:var(--yellow);padding:4px 9px;border-radius:4px}
+  .rank .pr{margin-left:auto;font-family:var(--display);font-size:26px;color:var(--faint)}
+  .rank.first .pr{color:var(--yellow)}
+  .rank .layer-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .rank .def{font-family:var(--body);font-weight:600;font-size:17.5px;margin:7px 0 8px}
+  .rank .cost{font-size:14.5px;color:var(--mute)}
+  .rank .move{font-size:14.5px;color:var(--mute);margin-top:13px;padding-top:13px;border-top:1px solid var(--line2)}
+  .rank .move b{color:var(--yellow);font-weight:700;display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+
+  .summary{border-top:1px solid var(--line);margin-top:60px;padding-top:44px}
+  .summary h3{font-size:clamp(28px,4vw,46px)}
+  .summary p{font-size:17.5px;color:var(--mute);max-width:720px;margin-top:18px;line-height:1.5}
+
+  /* yellow CTA card (matches landing page) */
+  .cta{margin-top:56px;background:var(--yellow);color:var(--charcoal);border-radius:24px 24px 24px 6px;padding:52px 54px}
+  .cta .eyebrow{color:var(--charcoal)}
+  .cta h3{color:var(--charcoal);font-size:clamp(32px,5vw,58px);margin-top:16px}
+  .cta p{color:#2c2a0f;font-size:17px;max-width:600px;margin-top:18px;line-height:1.5}
+  .cta .row{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:34px}
+  .btn.dark{background:var(--charcoal);border-color:var(--charcoal);color:#fff}
+  .btn.dark:hover{background:#0d1414}
+  .cta .tlink{color:var(--charcoal)}
+
+  /* connect confirmation */
+  .confirm{margin-top:44px;border:1px solid var(--line);border-radius:20px;background:var(--ink2);padding:46px 48px;max-width:680px}
+  .confirm h3{font-size:clamp(26px,3.5vw,40px)}
+  .confirm p{font-size:17px;color:var(--mute);margin-top:16px;line-height:1.5}
+
+  footer{border-top:1px solid var(--line);padding:34px 0;color:var(--faint);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="index.html" aria-label="Multiplayer"><img class="brand-mark" src="assets/wordmark.svg" alt="Multiplayer"></a>
+    <div class="steps" id="steps"></div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+
+    <!-- STEP 0: intro -->
+    <section class="screen on" data-step="0">
+      <div class="eyebrow">The default audit</div>
+      <h2 class="big">Find the settings<br>nobody chose.</h2>
+      <p class="lead">Most businesses are not badly designed. They are undesigned. They run on defaults, the ways of working that were inherited rather than chosen, and the most expensive of them are invisible. This is a ten minute diagnostic that finds the defaults likely costing you, and tells you which one is worth switching first.</p>
+      <div style="margin-top:30px"><span class="bubble">No sign-up to start. No score to game. Just a sharper look at your own building.</span></div>
+      <div class="navrow">
+        <button class="btn" onclick="go(1)">Start the audit <span class="arr">&#8594;</span></button>
+        <span class="hint">Six quick steps. Your answers stay in your browser until you choose to send them.</span>
+      </div>
+    </section>
+
+    <!-- STEP 1: context -->
+    <section class="screen" data-step="1">
+      <div class="eyebrow">Step one &nbsp;/&nbsp; The context</div>
+      <h2 class="mid kick">Set the scene</h2>
+      <p class="lead">Two quick questions about the business so we can read your answers in context. Nothing personal yet, and nothing required.</p>
+      <div class="form">
+        <div class="field"><label>Company size</label>
+          <select id="f_size">
+            <option value="">Select...</option>
+            <option>1–20</option><option>21–100</option><option>101–500</option><option>501–2,000</option><option>2,000+</option>
+          </select>
+        </div>
+        <div class="field"><label>Industry</label><input id="f_industry" type="text" placeholder="e.g. Financial services"></div>
+      </div>
+      <div class="navrow">
+        <button class="btn ghost" onclick="go(0)">Back</button>
+        <button class="btn" onclick="go(2)">Continue <span class="arr">&#8594;</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 2: symptoms -->
+    <section class="screen" data-step="2">
+      <div class="eyebrow">Step two &nbsp;/&nbsp; The symptoms</div>
+      <h2 class="mid kick">What is not working</h2>
+      <p class="lead">Nobody calls us when everything is fine. Pick the symptoms that feel true right now. Choose as many as fit. These are the snapshots. Next we go looking for the machine underneath them.</p>
+      <div class="grid" id="symptomGrid"></div>
+      <div class="countbar"><b id="selCount">0</b> selected. Pick at least two for a useful read.</div>
+      <div class="navrow">
+        <button class="btn ghost" onclick="go(1)">Back</button>
+        <button class="btn" id="toUnpack" onclick="buildUnpack()" disabled>Unpack the defaults <span class="arr">&#8594;</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 3: unpack -->
+    <section class="screen" data-step="3">
+      <div class="eyebrow">Step three &nbsp;/&nbsp; Where defaults hide</div>
+      <h2 class="mid kick">The machine underneath</h2>
+      <p class="lead">Your symptoms point to defaults across four layers. The taller the bar, the more of what you flagged traces back to that layer. Underneath each one are the specific defaults we would suspect.</p>
+      <div class="layers" id="layerList"></div>
+      <div class="navrow">
+        <button class="btn ghost" onclick="go(2)">Back</button>
+        <button class="btn" onclick="buildCalibrate()">Weigh them up <span class="arr">&#8594;</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 4: calibrate -->
+    <section class="screen" data-step="4">
+      <div class="eyebrow">Step four &nbsp;/&nbsp; Your read</div>
+      <h2 class="mid kick">How much, how stuck</h2>
+      <p class="lead">We have made a first guess for each suspected default. Correct us. For every one, how much is it costing you, and how entrenched is it. This is what separates a default worth switching from one worth leaving alone.</p>
+      <div class="calib" id="calibList"></div>
+      <div class="navrow">
+        <button class="btn ghost" onclick="go(3)">Back</button>
+        <button class="btn" onclick="buildResults()">See what to switch first <span class="arr">&#8594;</span></button>
+      </div>
+    </section>
+
+    <!-- STEP 5: results -->
+    <section class="screen" data-step="5">
+      <div class="eyebrow">Step five &nbsp;/&nbsp; <span id="resName">Results</span></div>
+      <h2 class="mid kick">What to switch first</h2>
+      <p class="lead">Every suspected default, placed by how much it would unlock against how hard it is to change. The top-left corner is where to start. High return, low resistance. The defaults worth switching first are below, ranked.</p>
+      <div class="resgrid">
+        <div class="matrix-wrap">
+          <div id="matrix"></div>
+          <div class="matrix-cap">Impact rises upward. Effort to change rises to the right. Switch the top-left first.</div>
+        </div>
+        <div class="ranklist" id="rankList"></div>
+      </div>
+
+      <div class="summary">
+        <h3 id="summaryHead">Your default profile</h3>
+        <p id="summaryText"></p>
+      </div>
+
+      <div class="cta">
+        <div class="eyebrow">A real look, not a guess</div>
+        <h3>This is a hypothesis.<br>The audit is the proof.</h3>
+        <p>What you just did in ten minutes, we do for real in ninety. We map one of your actual end to end flows, name the most expensive default inside it, and hand you one costed switch you could make on Monday. One per month, by request, no charge.</p>
+        <div class="row">
+          <button class="btn dark" onclick="go(6)">Talk to us about the real audit <span class="arr">&#8594;</span></button>
+          <button class="tlink" onclick="restart()">Start over</button>
+        </div>
+      </div>
+
+      <div class="navrow">
+        <button class="btn ghost" onclick="go(4)">Back</button>
+      </div>
+    </section>
+
+    <!-- STEP 6: connect -->
+    <section class="screen" data-step="6">
+      <div class="eyebrow">Step six &nbsp;/&nbsp; The conversation</div>
+      <h2 class="mid kick">A little about you</h2>
+      <p class="lead">Your read is yours to keep, no strings. If you want to go further, tell us where to send it and we will come back with a sharper take and, if it is useful, time to talk. No list, no spam.</p>
+      <div class="form" id="connectForm">
+        <div class="field"><label>First name <span class="req">*</span></label><input id="f_name" type="text" placeholder="Jordan"><div class="err" id="e_name">Please add your name.</div></div>
+        <div class="field"><label>Work email <span class="req">*</span></label><input id="f_email" type="email" placeholder="you@company.com"><div class="err" id="e_email">Please add a valid work email.</div></div>
+        <div class="field"><label>Company</label><input id="f_company" type="text" placeholder="Company name"></div>
+        <div class="field"><label>Your role</label>
+          <select id="f_role">
+            <option value="">Select...</option>
+            <option>Founder / CEO</option>
+            <option>COO / Operations</option>
+            <option>Product</option>
+            <option>Design</option>
+            <option>Technology / Engineering</option>
+            <option>Marketing / Brand</option>
+            <option>Transformation / Strategy</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <p class="privacy">By sending you agree we may contact you about your results. We will not share your details.</p>
+      </div>
+      <div class="navrow" id="connectNav">
+        <button class="btn ghost" onclick="go(5)">Back to results</button>
+        <button class="btn" onclick="submitConnect()">Send my read to Multiplayer <span class="arr">&#8594;</span></button>
+      </div>
+      <div class="confirm" id="connectDone" hidden>
+        <h3>On its way.</h3>
+        <p id="doneText">Thanks. Your read is ready to send from your email app. We will be in touch about the real audit.</p>
+        <div style="margin-top:26px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="ctaBook">Book a default audit</button>
+          <button class="tlink" onclick="restart()">Start over</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div>Multiplayer &nbsp;·&nbsp; The default audit</div>
+    <div>Built by design. Not by default.</div>
+  </div>
+</footer>
+
+<script>
+/* ============================ DATA MODEL ============================ */
+const LAYERS = {
+  cultural:       { name:"Cultural",       q:"Who really decides here?" },
+  operational:    { name:"Operational",    q:"Where does time quietly disappear?" },
+  systemic:       { name:"Systemic",       q:"What is the technology making us do?" },
+  organizational: { name:"Organizational", q:"What does the structure assume?" }
+};
+
+const DEFAULTS = {
+  C1:{layer:"cultural", text:"Decisions default to the most senior person in the room, not the best idea.",
+      cost:"Good thinking loses to rank, so the org keeps making confident, wrong calls.",
+      move:"Run one real decision from a written proposal read in silence first, before anyone speaks."},
+  C2:{layer:"cultural", text:"Disagreement gets avoided, so problems surface late and expensive.",
+      cost:"The truth arrives after the deadline instead of before it.",
+      move:"Name a red team on the next big call whose only job is to argue the other side."},
+  C3:{layer:"cultural", text:"Heroics are rewarded over systems, so nothing gets written down.",
+      cost:"The business runs on a few people and breaks when they are out.",
+      move:"Take one recurring save-the-day task and turn it into a checklist a junior can run."},
+  O1:{layer:"operational", text:"Legal, procurement or finance is a single-speed gate that throttles everything.",
+      cost:"Anything that needs to move fast dies waiting in a queue built for caution.",
+      move:"Create a one-page pre-approved agreement for low-risk work so small things stop waiting."},
+  O2:{layer:"operational", text:"Handoffs between teams lose context and quietly restart the work.",
+      cost:"You pay for the same thinking two or three times and call it collaboration.",
+      move:"Map one handoff end to end and delete the step where context gets re-explained."},
+  O3:{layer:"operational", text:"Work is measured by activity, not by movement toward the outcome.",
+      cost:"Everyone is busy, the dashboard is green, and the thing still does not move.",
+      move:"Replace one status meeting with a single metric that shows whether the work actually moved."},
+  S1:{layer:"systemic", text:"New tools get bent to fit old workflows, so the value never lands.",
+      cost:"You buy the future and run it on the past, then blame the future.",
+      move:"Before the next rollout, redesign the workflow on paper first, then fit the tool to it."},
+  S2:{layer:"systemic", text:"The work is shaped by the software's defaults, not by the work itself.",
+      cost:"Your people contort around the tool until the time it saves is the time it cost.",
+      move:"List three things you do only because the system wants you to, and challenge each."},
+  S3:{layer:"systemic", text:"Data sits in systems that do not talk, so decisions wait on it.",
+      cost:"Choices stall not for lack of judgment but for lack of a join.",
+      move:"Pick the one decision that always waits on data and connect just those two systems."},
+  G1:{layer:"organizational", text:"Every team optimizes its own slice and no one owns the whole journey.",
+      cost:"Each part improves while the experience as a whole quietly gets worse.",
+      move:"Give one person ownership of a single end-to-end journey, with authority over any step in it."},
+  G2:{layer:"organizational", text:"Strategy and execution sit in different rooms that rarely meet.",
+      cost:"The plan is sound and undeliverable, and nobody finds out until it is late.",
+      move:"Put one person from execution in the room where strategy is set, with a veto on feasibility."},
+  G3:{layer:"organizational", text:"The structure assumes a business that no longer exists.",
+      cost:"You keep reorganizing inside last era's logic and wonder why nothing changes.",
+      move:"Draw the org you would design from scratch today, then change the one box that differs most."}
+};
+
+const SYMPTOMS = [
+  {id:"ai",   t:"Our AI or tech investments are not paying off",      d:[["S1",3],["S2",3],["G2",1]]},
+  {id:"slow", t:"Projects take far too long to ship",                 d:[["O1",3],["O2",2],["O3",2]]},
+  {id:"stuck",t:"Decisions stall or keep getting reopened",           d:[["C1",3],["C2",2],["G2",1]]},
+  {id:"busy", t:"Teams are busy but the work does not move",          d:[["O3",3],["G1",2],["C3",1]]},
+  {id:"churn",t:"Customers drop off and we cannot see where",         d:[["G1",3],["S3",2],["O2",1]]},
+  {id:"polit",t:"Cross-functional work turns political",             d:[["C1",3],["G1",2],["C2",1]]},
+  {id:"reorg",t:"We keep reorganizing but nothing really changes",    d:[["G3",3],["C3",2],["G2",1]]},
+  {id:"tools",t:"New tools create more work, not less",               d:[["S2",3],["S1",2],["O3",1]]},
+  {id:"exec", t:"Strong strategy, weak execution",                    d:[["G2",3],["O1",2],["C2",1]]},
+  {id:"hand", t:"Handoffs and onboarding are painful",               d:[["O2",3],["S3",2],["G1",1]]},
+  {id:"whole",t:"We optimize the parts, the whole still feels broken",d:[["G1",3],["O3",2],["S3",1]]},
+  {id:"legal",t:"Good ideas die in legal, procurement or compliance", d:[["O1",3],["C2",2],["G3",1]]}
+];
+
+const LAYER_EFFORT = { cultural:3, organizational:3, operational:2, systemic:2 };
+
+/* ============================ STATE ============================ */
+const STATE = { step:0, id:{}, symptoms:new Set(), scores:{}, surfaced:[], calib:{} };
+const CONTACT_EMAIL = "hello@multiplayer.studio"; // wire to your inbox / CRM
+
+/* ============================ NAV ============================ */
+const STEP_LABELS = ["", "Context","Symptoms","Defaults","Weigh","Results","Connect"];
+function renderSteps(){
+  const el = document.getElementById("steps"); el.innerHTML="";
+  for(let i=1;i<=6;i++){
+    const d=document.createElement("div");
+    d.className="stepdot"+(i===STATE.step?" active":"")+(i<STATE.step?" done":"");
+    d.innerHTML=`<span class="n">${i}</span><span>${STEP_LABELS[i]}</span>`;
+    el.appendChild(d);
+    if(i<6){const s=document.createElement("div");s.className="stepsep";el.appendChild(s);}
+  }
+}
+function go(n){
+  STATE.step=n;
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", +s.dataset.step===n));
+  renderSteps();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ============================ STEP 2: symptoms ============================ */
+function renderSymptoms(){
+  const g=document.getElementById("symptomGrid"); g.innerHTML="";
+  SYMPTOMS.forEach(s=>{
+    const t=document.createElement("div");
+    t.className="tile"+(STATE.symptoms.has(s.id)?" sel":"");
+    t.innerHTML=`<div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#192222" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div><h4>${s.t}</h4>`;
+    t.onclick=()=>{ STATE.symptoms.has(s.id)?STATE.symptoms.delete(s.id):STATE.symptoms.add(s.id); t.classList.toggle("sel"); updateCount(); };
+    g.appendChild(t);
+  });
+  updateCount();
+}
+function updateCount(){
+  const n=STATE.symptoms.size;
+  document.getElementById("selCount").textContent=n;
+  document.getElementById("toUnpack").disabled = n<1;
+}
+
+/* ============================ STEP 3: scoring ============================ */
+function computeScores(){
+  const scores={};
+  STATE.symptoms.forEach(sid=>{
+    const s=SYMPTOMS.find(x=>x.id===sid);
+    s.d.forEach(([d,w])=>{ scores[d]=(scores[d]||0)+w; });
+  });
+  STATE.scores=scores;
+  STATE.surfaced=Object.keys(scores).sort((a,b)=>scores[b]-scores[a]).slice(0,6);
+}
+function layerScore(layer){
+  let sum=0; for(const d in STATE.scores){ if(DEFAULTS[d].layer===layer) sum+=STATE.scores[d]; } return sum;
+}
+function buildUnpack(){
+  computeScores();
+  const list=document.getElementById("layerList"); list.innerHTML="";
+  const layerOrder=Object.keys(LAYERS).sort((a,b)=>layerScore(b)-layerScore(a));
+  const maxL=Math.max(1,...layerOrder.map(layerScore));
+  layerOrder.forEach(lk=>{
+    const ls=layerScore(lk); if(ls<=0) return;
+    const hits=STATE.surfaced.filter(d=>DEFAULTS[d].layer===lk);
+    const L=LAYERS[lk];
+    const wrap=document.createElement("div"); wrap.className="layer";
+    wrap.innerHTML=`<div class="top"><div class="name">${L.name}</div><div class="q">${L.q}</div></div>
+      <div class="meter"><i data-w="${Math.round(ls/maxL*100)}"></i></div>
+      <div class="hits">${hits.map(d=>`<div class="hit"><span><b>Suspected default.</b> ${DEFAULTS[d].text}</span></div>`).join("")}</div>`;
+    list.appendChild(wrap);
+  });
+  go(3);
+  requestAnimationFrame(()=>document.querySelectorAll(".meter > i").forEach(i=>i.style.width=i.dataset.w+"%"));
+}
+
+/* ============================ STEP 4: calibrate ============================ */
+const LV=["Low","Medium","High"];
+function buildCalibrate(){
+  const list=document.getElementById("calibList"); list.innerHTML="";
+  STATE.surfaced.forEach(d=>{
+    const def=DEFAULTS[d];
+    if(!STATE.calib[d]){
+      const sc=STATE.scores[d]||1;
+      const impact = sc>=5?3 : sc>=3?2 : 1;
+      STATE.calib[d]={impact, effort:LAYER_EFFORT[def.layer]};
+    }
+    const c=STATE.calib[d];
+    const row=document.createElement("div"); row.className="crow";
+    row.innerHTML=`<div class="lab">${LAYERS[def.layer].name}</div>
+      <div class="def">${def.text}</div>
+      <div class="cost">${def.cost}</div>
+      <div class="controls">
+        <div class="ctrl"><div class="ctitle"><span>How much is it costing you?</span><span class="qmark" title="Impact: how much would removing this unlock?">impact</span></div>
+          <div class="seg" data-d="${d}" data-k="impact">${LV.map((l,i)=>`<button class="${c.impact===i+1?'on':''}" data-v="${i+1}">${l}</button>`).join("")}</div></div>
+        <div class="ctrl"><div class="ctitle"><span>How entrenched is it?</span><span class="qmark" title="Effort: how hard would it be to change?">effort</span></div>
+          <div class="seg" data-d="${d}" data-k="effort">${LV.map((l,i)=>`<button class="${c.effort===i+1?'on':''}" data-v="${i+1}">${l}</button>`).join("")}</div></div>
+      </div>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll(".seg").forEach(seg=>{
+    seg.querySelectorAll("button").forEach(b=>{
+      b.onclick=()=>{
+        const d=seg.dataset.d,k=seg.dataset.k,v=+b.dataset.v;
+        STATE.calib[d][k]=v;
+        seg.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));
+      };
+    });
+  });
+  go(4);
+}
+
+/* ============================ STEP 5: results ============================ */
+function priority(c){ return c.impact * (4 - c.effort); }
+function buildResults(){
+  const ranked=[...STATE.surfaced].sort((a,b)=>priority(STATE.calib[b])-priority(STATE.calib[a]));
+  document.getElementById("resName").textContent = "Results";
+  drawMatrix(ranked);
+  const rl=document.getElementById("rankList"); rl.innerHTML="";
+  ranked.forEach((d,idx)=>{
+    const def=DEFAULTS[d], c=STATE.calib[d], p=priority(c);
+    const first = idx===0 && c.impact>=2 && c.effort<=2;
+    const card=document.createElement("div"); card.className="rank"+(first?" first":"");
+    card.innerHTML=`<div class="rtop">
+        <span class="layer-tag">${idx+1}. ${LAYERS[def.layer].name}</span>
+        ${first?'<span class="badge">Switch first</span>':''}
+        <span class="pr">${p}</span></div>
+      <div class="def">${def.text}</div>
+      <div class="cost">${def.cost}</div>
+      <div class="move"><b>First move</b>${def.move}</div>`;
+    rl.appendChild(card);
+  });
+  buildSummary(ranked);
+  STATE._ranked = ranked;
+  go(5);
+}
+
+function drawMatrix(ranked){
+  const W=440,H=440,P=46;
+  const px=v=>P+( (v-1)/2 )*(W-2*P);
+  const py=v=>H-P-( (v-1)/2 )*(H-2*P);
+  const zx=P, zy=P, zw=(W-2*P)/2, zh=(H-2*P)/2;
+  let dots="";
+  const seen={};
+  ranked.forEach((d,i)=>{
+    const c=STATE.calib[d]; let x=px(c.effort), y=py(c.impact);
+    const key=c.effort+"-"+c.impact; const k=seen[key]||0; seen[key]=k+1;
+    const ang=k*2.4, r=k?14+k*3:0; x+=Math.cos(ang)*r; y+=Math.sin(ang)*r;
+    const first=i===0 && c.impact>=2 && c.effort<=2;
+    dots+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" fill="${first?'#FFEB36':'#1F2929'}" stroke="#FFFFFF" stroke-width="2"/>
+           <text x="${x.toFixed(1)}" y="${(y+5).toFixed(1)}" text-anchor="middle" font-family="Anton,sans-serif" font-size="17" fill="${first?'#192222':'#FFFFFF'}">${i+1}</text>`;
+  });
+  const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg">
+    <rect x="${zx}" y="${zy}" width="${zw}" height="${zh}" fill="#FFEB36" opacity="0.16"/>
+    <text x="${zx+12}" y="${zy+24}" font-family="Inter,sans-serif" font-weight="600" font-size="12" fill="#FFEB36">SWITCH FIRST</text>
+    <line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+    <line x1="${P}" y1="${P}" x2="${P}" y2="${H-P}" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+    <line x1="${P+(W-2*P)/2}" y1="${P}" x2="${P+(W-2*P)/2}" y2="${H-P}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+    <line x1="${P}" y1="${P+(H-2*P)/2}" x2="${W-P}" y2="${P+(H-2*P)/2}" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+    <text x="${P-10}" y="${P-16}" font-family="Inter,sans-serif" font-size="11" fill="#8C9292">IMPACT</text>
+    <text x="${W-P}" y="${H-P+30}" text-anchor="end" font-family="Inter,sans-serif" font-size="11" fill="#8C9292">EFFORT TO CHANGE &#8594;</text>
+    ${dots}
+  </svg>`;
+  document.getElementById("matrix").innerHTML=svg;
+}
+
+function buildSummary(ranked){
+  const topLayerCounts={};
+  STATE.surfaced.forEach(d=>{const l=DEFAULTS[d].layer; topLayerCounts[l]=(topLayerCounts[l]||0)+(STATE.scores[d]||0);});
+  const domLayer=Object.keys(topLayerCounts).sort((a,b)=>topLayerCounts[b]-topLayerCounts[a])[0];
+  const top=ranked[0];
+  document.getElementById("summaryHead").textContent = `${LAYERS[domLayer].name} is where your defaults cluster`;
+  const switchFirst = STATE.calib[top].impact>=2 && STATE.calib[top].effort<=2;
+  document.getElementById("summaryText").innerHTML =
+    `Most of what you flagged traces back to the <b style="color:#fff">${LAYERS[domLayer].name.toLowerCase()}</b> layer, where the question worth asking is, ${LAYERS[domLayer].q.toLowerCase().replace(/\?$/,'')}. `+
+    `Across everything, the default we would look at first is this: <b style="color:#fff">${DEFAULTS[top].text.replace(/\.$/,'')}</b>. `+
+    (switchFirst
+      ? `You rated it high return and not deeply entrenched, which is the rare combination worth moving on now.`
+      : `It is either costly, hard to move, or both, so the first step is to understand it before touching it.`)+
+    ` Remember, the goal is never to switch every default. It is to find the one or two whose change unlocks the most, and leave the rest alone.`;
+}
+
+/* ============================ STEP 6: connect ============================ */
+function buildMailto(subject){
+  const ranked = STATE._ranked || [...STATE.surfaced];
+  const top=ranked.slice(0,3).map((d,i)=>`${i+1}. ${DEFAULTS[d].text} (priority ${priority(STATE.calib[d])}/9)`).join("\n");
+  const who=`${STATE.id.name||""}${STATE.id.company?" at "+STATE.id.company:""}${STATE.id.role?" ("+STATE.id.role+")":""}`;
+  const context=`${STATE.id.size?STATE.id.size+" people":""}${STATE.id.industry?", "+STATE.id.industry:""}`;
+  const symptomText=[...STATE.symptoms].map(id=>"- "+SYMPTOMS.find(s=>s.id===id).t).join("\n");
+  const body=`Hi Multiplayer,\n\nI ran the Default Audit. Here is my read.\n\nWho: ${who}\nContext: ${context}\n\nSymptoms I flagged:\n${symptomText}\n\nTop defaults to switch:\n${top}\n\nI'd like to talk about the real audit.\n\n${STATE.id.name||""}`;
+  return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function submitConnect(){
+  const name=document.getElementById("f_name").value.trim();
+  const email=document.getElementById("f_email").value.trim();
+  const okName=name.length>0;
+  const okEmail=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+  document.getElementById("e_name").classList.toggle("show",!okName);
+  document.getElementById("e_email").classList.toggle("show",!okEmail);
+  if(!okName||!okEmail) return;
+  STATE.id={ name, email,
+    company:document.getElementById("f_company").value.trim(),
+    role:document.getElementById("f_role").value,
+    size:document.getElementById("f_size").value,
+    industry:document.getElementById("f_industry").value.trim() };
+  // open the prefilled email
+  window.location.href = buildMailto("My Default Audit results");
+  // confirmation state
+  document.getElementById("connectForm").style.display="none";
+  document.getElementById("connectNav").style.display="none";
+  document.getElementById("connectDone").hidden=false;
+  document.getElementById("doneText").textContent =
+    `Thanks, ${name}. Your read is ready to send from your email app. We will be in touch about the real audit.`;
+  document.getElementById("ctaBook").onclick=()=>{ window.location.href = buildMailto("Book a default audit"); };
+}
+
+/* ============================ RESET ============================ */
+function restart(){
+  STATE.id={}; STATE.symptoms=new Set(); STATE.scores={}; STATE.surfaced=[]; STATE.calib={}; STATE._ranked=null;
+  document.querySelectorAll("input,select,textarea").forEach(f=>f.value="");
+  document.getElementById("connectForm").style.display="";
+  document.getElementById("connectNav").style.display="";
+  document.getElementById("connectDone").hidden=true;
+  renderSymptoms(); go(0);
+}
+
+/* ============================ INIT ============================ */
+renderSymptoms(); renderSteps();
+</script>
+<script>(function(){function p(){parent.postMessage({mpFrameHeight:document.documentElement.scrollHeight},"*");}window.addEventListener("load",p);window.addEventListener("resize",p);new ResizeObserver(p).observe(document.body);setInterval(p,1000);})();</script>
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Built by design. Not by default. — Multiplayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#192222; --ink2:#1F2929; --charcoal:#192222;
+    --yellow:#FFEB36; --yellow-press:#F0DC2E;
+    --cream:#F4F4F0; --grey:#5E6464; --mute:#C9CCCC; --faint:#8C9292;
+    --line:rgba(255,255,255,.14); --line-dark:rgba(25,34,34,.34);
+    --display:'Anton',Impact,'Arial Black',sans-serif;
+    --body:'Inter',Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--body);font-weight:400;color:#fff;background:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1300px;margin:0 auto;padding:0 50px}
+  h1,h2,.display{font-family:var(--display);font-weight:400;letter-spacing:.01em;line-height:.96;text-transform:none}
+  a{color:inherit;text-decoration:none}
+  img,svg{display:block}
+
+  .eyebrow{font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.005em;color:#fff}
+  .sec-light .eyebrow,.sec-yellow .eyebrow{color:var(--charcoal)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:11px;font-family:var(--body);font-weight:700;font-size:16px;padding:18px 30px;border:1px solid var(--yellow);background:var(--yellow);color:var(--charcoal);border-radius:4px;transition:background .15s,border-color .15s;cursor:pointer}
+  .btn:hover{background:var(--yellow-press);border-color:var(--yellow-press)}
+  .btn.outline-light{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+  .btn.outline-light:hover{background:rgba(255,255,255,.08)}
+  .btn.dark{background:var(--charcoal);border-color:var(--charcoal);color:#fff}
+  .btn.dark:hover{background:#0d1414}
+  .btn .arr{font-weight:400;font-size:18px;line-height:1}
+  /* text link with underline rule */
+  .tlink{display:inline-flex;flex-direction:column;font-weight:700;font-size:16px;color:#fff}
+  .tlink::after{content:"";height:1px;background:currentColor;margin-top:9px;opacity:.85}
+  .sec-light .tlink,.sec-yellow .tlink{color:var(--charcoal)}
+
+  /* yellow chip / bubble */
+  .bubble{display:inline-block;background:var(--yellow);color:var(--charcoal);font-family:var(--body);font-weight:500;font-size:15px;padding:11px 20px;border-radius:18px 18px 18px 4px}
+
+  /* dimension bracket annotation */
+  .bracket{display:block;height:10px;margin-top:14px}
+  .bracket svg{width:100%;height:10px;overflow:visible}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:30;background:rgba(25,34,34,.94);backdrop-filter:blur(8px)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:92px;gap:30px}
+  .brand-mark{height:26px;width:auto}
+  .navlinks{display:flex;gap:44px;margin-left:auto;margin-right:38px}
+  .navlinks a{font-size:16px;font-weight:600;color:#fff;opacity:.95}
+  .navlinks a:hover{opacity:1;color:var(--yellow)}
+  .nav-cta{font-weight:700;font-size:16px;border:1px solid rgba(255,255,255,.45);border-radius:4px;padding:15px 26px;display:inline-flex;align-items:center;gap:10px}
+  .nav-cta:hover{background:rgba(255,255,255,.07)}
+  @media(max-width:900px){.navlinks{display:none}}
+
+  /* HERO */
+  .hero{padding:64px 0 110px}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:40px}
+  .hero .eyebrow{margin-bottom:30px}
+  .hero h1{font-size:clamp(46px,5.9vw,86px);color:#fff}
+  .hero .h1bracket{width:300px;margin:12px 0 0 auto}
+  .hero .lede{font-size:clamp(18px,1.6vw,22px);font-weight:400;color:var(--mute);max-width:560px;margin:46px 0 0;line-height:1.45}
+  .hero .row{display:flex;align-items:center;gap:34px;margin-top:48px;flex-wrap:wrap}
+  .hero-art{width:100%;max-width:560px;margin-left:auto}
+  @media(max-width:880px){.hero .grid{grid-template-columns:1fr}.hero-art{margin:30px auto 0;max-width:440px}}
+
+  /* LOGO STRIP */
+  .strip{position:relative;background:var(--ink);padding:96px 0;overflow:hidden}
+  .strip::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:144px 144px;background-position:center;pointer-events:none}
+  .strip .wrap{position:relative}
+  .strip-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px 70px;align-items:start}
+  .strip .logo-amazon{width:230px;height:auto;margin:-30px 0 0 -14px}
+  .strip .logo-zebra{width:220px;height:auto;margin:96px 0 0 196px}
+  .strip .right{display:flex;flex-direction:column;align-items:flex-start;gap:34px}
+  .strip .bubble{align-self:flex-start}
+  .strip p{font-size:clamp(20px,2vw,27px);font-weight:400;color:#E6E8E8;line-height:1.4;max-width:480px}
+  @media(max-width:880px){.strip-grid{grid-template-columns:1fr;gap:46px}.strip .logo-amazon{margin-bottom:0}}
+
+  /* generic section */
+  section{padding:120px 0}
+  h2{font-size:clamp(46px,8vw,108px);color:#fff}
+  .sec-light{background:var(--cream);color:var(--charcoal)}
+  .sec-light h2{color:var(--charcoal)}
+  .sec-yellow{background:var(--yellow);color:var(--charcoal)}
+  .sec-yellow h2{color:var(--charcoal)}
+
+  /* ENEMY */
+  .enemy h2{margin-top:18px}
+  .enemy-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:70px;align-items:start;margin-top:80px}
+  .enemy-art{width:100%;max-width:420px}
+  .enemy-grid p{font-size:19px;color:#2a3332;margin-bottom:24px;line-height:1.5;max-width:620px}
+  .enemy-grid .lead{font-family:var(--body);font-weight:700;font-size:21px;color:var(--charcoal);margin-top:34px}
+  .enemy-grid .lead .br{max-width:360px}
+
+  /* AI PROBLEM (dark + grid) */
+  .ai{position:relative;background:var(--ink);overflow:hidden}
+  .ai::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:144px 144px;background-position:center;pointer-events:none}
+  .ai .wrap{position:relative}
+  .ai-head{display:flex;justify-content:space-between;align-items:center;gap:30px}
+  .ai h2{max-width:760px}
+  .ai .frame{width:210px;height:auto;flex:none}
+  .ai .sub{font-size:clamp(19px,2vw,24px);color:var(--mute);max-width:560px;margin-top:34px;line-height:1.4}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:80px;margin-top:96px;max-width:1000px;margin-left:auto;margin-right:auto}
+  .stat .num{font-family:var(--display);font-size:clamp(96px,12vw,170px);line-height:.82;color:#fff;text-shadow:0 6px 26px rgba(0,0,0,.55)}
+  .stat .num sup{font-size:.42em;vertical-align:top;top:.15em;position:relative}
+  .stat .desc{font-size:18px;font-weight:600;color:#EDEFEF;margin-top:26px;max-width:380px;line-height:1.4}
+  .stat .src{font-size:13.5px;color:var(--faint);margin-top:20px}
+  .ai .finding{max-width:1000px;margin:88px auto 0}
+  .ai .finding .bubble{margin-bottom:30px}
+  .ai .finding p{font-size:clamp(18px,1.8vw,22px);color:var(--mute);max-width:880px;line-height:1.5;padding-left:200px}
+  @media(max-width:880px){.stats{grid-template-columns:1fr;gap:54px}.ai .finding p{padding-left:0}.ai .frame{display:none}}
+
+  /* FOUR PLACES */
+  .four-head{display:grid;grid-template-columns:1.1fr .9fr;gap:50px;align-items:start}
+  .four-head h2{margin-top:14px;font-size:clamp(40px,5.7vw,82px)}
+  .four-head .intro{font-size:clamp(18px,1.7vw,21px);color:#2a3332;line-height:1.5;max-width:420px;margin-top:60px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:80px}
+  .card{border:1px solid var(--line-dark);border-radius:22px;padding:46px 48px;background:#fff}
+  .card .q{font-size:13.5px;font-weight:700;color:var(--charcoal);letter-spacing:.005em}
+  .card h3{font-family:var(--body);font-weight:700;font-size:25px;color:var(--charcoal);margin:18px 0 16px}
+  .card p{font-size:16.5px;color:#3a4342;line-height:1.5;max-width:330px}
+  .switch{text-align:center;margin-top:90px;font-family:var(--body);font-weight:700;font-size:clamp(22px,3vw,34px);color:var(--charcoal);line-height:1.25}
+  .switch .br{max-width:420px;margin:14px auto 0}
+  @media(max-width:880px){.four-head,.cards{grid-template-columns:1fr}.four-head .intro{margin-top:10px}}
+
+  /* TWO THINGS (yellow) */
+  .two h2{margin-top:18px}
+  .tworow{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:84px}
+  .tworow.flip .txt{order:2}
+  .tworow .k{font-family:var(--body);font-weight:700;font-size:15px;color:var(--charcoal)}
+  .tworow h3{font-family:var(--body);font-weight:500;font-size:clamp(26px,3vw,34px);color:var(--charcoal);margin:22px 0 24px;letter-spacing:-.01em}
+  .tworow p{font-size:18px;color:#23302e;line-height:1.5;max-width:480px}
+  .tworow img{width:100%;height:auto;border-radius:10px;display:block}
+  .twoline{text-align:center;margin-top:96px;font-family:var(--body);font-weight:700;font-size:clamp(20px,2.4vw,30px);color:var(--charcoal);line-height:1.3}
+  @media(max-width:880px){.tworow{grid-template-columns:1fr;gap:30px}.tworow.flip .txt{order:0}.tworow.flip .media{order:2}}
+
+  /* WHERE THE WORK IS REAL (dark) */
+  .work h2{margin-top:16px}
+  .work-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:80px;align-items:center;margin-top:80px}
+  .work-blurbs p{font-size:19px;color:#D7DADA;line-height:1.5;margin-bottom:34px;max-width:380px}
+  .work-blurbs b{color:#fff;font-weight:700}
+  .work .logo-grid{width:100%;height:auto}
+
+  /* AUDIT (light) */
+  .audit-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:80px;align-items:start;margin-top:70px}
+  .audit h2{margin-top:16px}
+  .audit .big{font-size:clamp(22px,2.6vw,32px);font-weight:400;color:var(--charcoal);line-height:1.32;max-width:520px;margin-top:0}
+  .audit .small{font-size:16.5px;color:#3a4342;line-height:1.5;max-width:520px;margin-top:30px}
+  .audit .row{display:flex;align-items:center;gap:34px;margin-top:40px;flex-wrap:wrap}
+  .audit .fine{font-size:13.5px;font-weight:600;color:#3a4342;margin-top:26px}
+  .steps{border:1px solid var(--line-dark);border-radius:22px;padding:46px 50px;background:#fff}
+  .steps h4{font-family:var(--body);font-weight:700;font-size:26px;color:var(--charcoal);margin-bottom:30px}
+  .steps ol{list-style:none;display:flex;flex-direction:column;gap:26px}
+  .steps li{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:start}
+  .steps .n{font-family:var(--display);font-size:30px;color:var(--charcoal);line-height:1}
+  .steps .s{font-size:17px;color:#2a3332;line-height:1.4;max-width:330px}
+  @media(max-width:880px){.audit-grid{grid-template-columns:1fr;gap:46px}}
+
+  /* FOOTER CTA */
+  .footcta{background:var(--ink);padding:70px 0 56px}
+  .chatcard{display:block;width:100%}
+  .chatcard img,.chatcard svg{display:block;width:100%;height:auto}
+  .footrule{height:1px;background:var(--line);margin:64px 0 40px}
+  .footrow{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .foot-mark{height:26px;width:auto}
+  .footlinks{display:flex;gap:46px}
+  .footlinks a{font-size:15px;font-weight:600;color:#fff}
+  .footlinks a:hover{color:var(--yellow)}
+  .footmeta{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:26px;flex-wrap:wrap}
+  .li{width:22px;height:22px;fill:#fff}
+
+  @media(max-width:840px){
+    .wrap{padding:0 24px}
+    section,.strip{padding:80px 0}
+    .hero{padding:40px 0 70px}
+    .enemy-grid,.work-grid{grid-template-columns:1fr;gap:44px}
+    .cards{grid-template-columns:1fr}
+  }
+
+  /* ===== motion: scroll reveal + parallax ===== */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,.61,.36,1),transform .8s cubic-bezier(.22,.61,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+  [data-parallax]{will-change:transform}
+  .nav-cta,.btn,.card,.tile,.tworow img,.work .logo-grid{transition:transform .35s cubic-bezier(.22,.61,.36,1),background .15s,border-color .15s,box-shadow .35s}
+  .card:hover,.tworow img:hover{transform:translateY(-4px)}
+  .chatcard img{transition:transform .4s cubic-bezier(.22,.61,.36,1)}
+  .chatcard:hover img{transform:translateY(-3px)}
+  @media (prefers-reduced-motion: reduce){
+    .reveal{opacity:1!important;transform:none!important;transition:none!important}
+    [data-parallax]{transform:none!important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="wrap">
+    <a href="#top" aria-label="Multiplayer"><img class="brand-mark" src="assets/wordmark.svg" alt="Multiplayer"></a>
+    <div class="navlinks">
+      <a href="#enemy">Our why</a>
+      <a href="#work">Our work</a>
+      <a href="#capabilities">Our capabilities</a>
+    </div>
+    <a class="nav-cta" href="mailto:hello@multiplayer.studio?subject=Book%20a%20call">Book a call <span class="arr">&#8594;</span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <div class="eyebrow">Design as an operating system for business</div>
+        <h1>Built by design.<br>Not by default.</h1>
+        <p class="lede">Multiplayer is an operational design partner. We design what your company ships, which helps improve how your business operates.</p>
+        <div class="row">
+          <a class="btn" href="#capabilities">View all capabilities <span class="arr">&#8594;</span></a>
+          <a class="tlink" href="#enemy">See how it works</a>
+        </div>
+      </div>
+      <div><img class="hero-art" src="assets/hero-graphic.png" alt="A hand flipping a default switch" data-parallax="20"></div>
+    </div>
+  </div>
+</header>
+
+<!-- LOGO STRIP -->
+<section class="strip">
+  <div class="wrap">
+    <div class="strip-grid">
+      <div>
+        <img class="logo-amazon" src="assets/logo-amazon.svg" alt="Amazon">
+        <img class="logo-zebra" src="assets/logo-zebra.svg" alt="Zebra">
+      </div>
+      <div class="right">
+        <span class="bubble">Our 5 second pitch</span>
+        <p>Companies like Amazon and Zebra hire us to design and deploy complex products. Along the way, we help them build better ways to build.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEFAULT IS THE ENEMY (light) -->
+<section class="sec-light enemy" id="enemy">
+  <div class="wrap">
+    <div class="eyebrow">The problem we solve</div>
+    <h2>Default is the enemy</h2>
+    <div class="enemy-grid">
+      <div><img class="enemy-art" src="assets/enemy-illustration.svg" alt=""></div>
+      <div>
+        <p>Nothing meaningful inside an organization is an accident. Culture is designed. Workflow is designed. AI adoption is designed. If it was not designed on purpose, it is running by default, and a default is just a decision somebody forgot to make.</p>
+        <p>The word does two jobs at once. In software, a default is the setting a thing ships with before you touch it. In finance, to default is to fail to meet your obligations. Most companies pay the first on the way to flirting with the second.</p>
+        <div class="lead">Most companies are not badly designed.<br>They are undesigned.
+          <div class="bracket br">
+            <svg viewBox="0 0 360 10" preserveAspectRatio="none"><g stroke="#192222" stroke-width="1.2" fill="none"><line x1="1" y1="1" x2="1" y2="9"/><line x1="1" y1="5" x2="359" y2="5"/><line x1="359" y1="1" x2="359" y2="9"/><line x1="180" y1="2" x2="180" y2="8"/></g></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- YOU DO NOT HAVE AN AI PROBLEM (dark) -->
+<section class="ai">
+  <div class="wrap">
+    <div class="ai-head">
+      <h2>You do not have<br>an AI problem</h2>
+      <img class="frame" src="assets/sparkle-frame.svg" alt="" data-parallax="34">
+    </div>
+    <p class="sub">You have a default problem. The most expensive proof is happening in public right now.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="num" data-count="95">95<sup>%</sup></div>
+        <div class="desc">of enterprise generative AI pilots produce no measurable return.</div>
+        <div class="src">MIT NANDA, State of AI in Business 2025</div>
+      </div>
+      <div class="stat">
+        <div class="num" data-count="42">42<sup>%</sup></div>
+        <div class="desc">of companies abandoned most of their AI initiatives in 2025, up from 17% a year earlier.</div>
+        <div class="src">S&amp;P Global Market Intelligence, 2025</div>
+      </div>
+    </div>
+    <div class="finding">
+      <span class="bubble">MIT's finding</span>
+      <p>The failure is not in the technology. It is in the approach. Companies bend their teams to fit the tool's defaults instead of designing the tool to fit how the team actually works. We do the reverse.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DEFAULT HIDES IN FOUR PLACES (light) -->
+<section class="sec-light four">
+  <div class="wrap">
+    <div class="four-head">
+      <div>
+        <div class="eyebrow">Where it hides</div>
+        <h2>Default hides in<br>four places</h2>
+      </div>
+      <p class="intro">You cannot rip out every default layer by layer. You read the system like a blueprint, find where it leaks, and treat defaults as switches.</p>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="q">Who really decides?</div><h3>Cultural</h3><p>The team defers to the loudest or most senior voice in the room, not the best idea.</p></div>
+      <div class="card"><div class="q">What is the tech making us do?</div><h3>Systemic</h3><p>New tools bent to fit old workflows, so the value never shows up.</p></div>
+      <div class="card"><div class="q">Where does time go?</div><h3>Operational</h3><p>The one step everyone has stopped questioning sets the pace for everything else.</p></div>
+      <div class="card"><div class="q">What does structure assume?</div><h3>Organizational</h3><p>Every team optimizes its own slice while nobody owns the whole journey.</p></div>
+    </div>
+    <div class="switch">Some defaults are worth keeping. Some are worth flipping.<br>The whole skill is knowing which.
+      <div class="bracket br">
+        <svg viewBox="0 0 420 10" preserveAspectRatio="none"><g stroke="#192222" stroke-width="1.2" fill="none"><line x1="1" y1="1" x2="1" y2="9"/><line x1="1" y1="5" x2="419" y2="5"/><line x1="419" y1="1" x2="419" y2="9"/><line x1="210" y1="2" x2="210" y2="8"/></g></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TWO THINGS (yellow) -->
+<section class="sec-yellow two" id="capabilities">
+  <div class="wrap">
+    <div class="eyebrow">What we do</div>
+    <h2>Two things, each<br>opens the other</h2>
+
+    <div class="tworow">
+      <div class="txt">
+        <div class="k">Embedded Design</div>
+        <h3>We ship the product</h3>
+        <p>Multidisciplinary teams embed inside your product organization to extend capability and ship faster. This is the work that has anchored Amazon, Zebra, Aon and SmugMug for years. It is also where we learn how a company actually works, not how its org chart says it does.</p>
+      </div>
+      <div class="media"><img src="assets/embedded-laptop.png" alt="Embedded product work" data-parallax="14"></div>
+    </div>
+
+    <div class="tworow flip">
+      <div class="txt">
+        <div class="k">By Design Practices</div>
+        <h3>We redesign the system</h3>
+        <p>That insight powers our practices at the top of the house. Each pairs a domain expert who drives the C-suite conversation with a Multiplayer pod that builds it from the inside: AI by Design, Transformation by Design, Product by Design, Culture by Design.</p>
+      </div>
+      <div class="media"><img src="assets/bydesign-phone.png" alt="By Design product" data-parallax="14"></div>
+    </div>
+
+    <div class="twoline">Ship the product. Redesign the system.<br>Not design thinking. Design deployment.</div>
+  </div>
+</section>
+
+<!-- WHERE THE WORK IS REAL (dark) -->
+<section class="work" id="work">
+  <div class="wrap">
+    <div class="eyebrow">Who we do it for</div>
+    <h2>Where the work is real</h2>
+    <div class="work-grid">
+      <div class="work-blurbs">
+        <p><b>Amazon,</b> for over 125 projects across Robotics, Last Mile, Delivery Experience and ADX.</p>
+        <p><b>Zebra Technologies</b>, fifteen years as Platinum design partner.</p>
+        <p><b>SmugMug</b>, where an embedded redesign lifted trial-to-paid conversion by 42%. Plus an emerging group of AI-led disruptors.</p>
+      </div>
+      <div><img class="logo-grid" src="assets/logo-grid.svg" alt="Amazon, Zebra, SmugMug, Aon, Ascension, Dow Jones, ADP, Xerox, NRG"></div>
+    </div>
+  </div>
+</section>
+
+<!-- RUN THE DEFAULT AUDIT (light) -->
+<section class="sec-light audit" id="audit">
+  <div class="wrap">
+    <div class="eyebrow">Find the settings nobody chose</div>
+    <h2>Run the<br>default audit</h2>
+    <div class="audit-grid">
+      <div>
+        <p class="big">A ten minute diagnostic that finds the defaults likely costing you and tells you which one is worth switching first.</p>
+        <p class="small">Pick the symptoms that feel true. We trace them to the defaults underneath, then rank them by what would unlock the most for the least resistance.</p>
+        <div class="row">
+          <a class="btn dark" href="default-diagnostic.html">Start the default audit <span class="arr">&#8594;</span></a>
+          <a class="tlink" href="mailto:hello@multiplayer.studio?subject=Default%20audit">Talk to us instead</a>
+        </div>
+        <p class="fine">Free. Your answers stay in your browser until you choose to send them.</p>
+      </div>
+      <div class="steps">
+        <h4>How it works</h4>
+        <ol>
+          <li><span class="n">01</span><span class="s">Tell us who is looking and what is not working.</span></li>
+          <li><span class="n">02</span><span class="s">We map your symptoms to the defaults hiding underneath.</span></li>
+          <li><span class="n">03</span><span class="s">You weigh each one on cost and how entrenched it is.</span></li>
+          <li><span class="n">04</span><span class="s">We rank what to switch first, with a move you could make Monday.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<footer class="footcta">
+  <div class="wrap">
+    <a class="chatcard" href="mailto:hello@multiplayer.studio?subject=Let%27s%20chat" aria-label="Let's chat">
+      <img src="assets/lets-chat-card.svg" alt="Let's chat">
+    </a>
+    <div class="footrule"></div>
+    <div class="footrow">
+      <img class="foot-mark" src="assets/wordmark.svg" alt="Multiplayer">
+    </div>
+    <div class="footmeta">
+      <div class="footlinks">
+        <a href="#">Cookies</a>
+        <a href="#">Legal</a>
+        <a href="#">Careers</a>
+      </div>
+      <a href="https://www.linkedin.com" aria-label="LinkedIn">
+        <svg class="li" viewBox="0 0 24 24"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+
+  /* ---- scroll reveal ---- */
+  var sel = '.eyebrow, h1, .hero .lede, .hero .row, h2, .strip .logo-amazon, .strip .logo-zebra, .strip .right, '
+          + '.enemy-art, .enemy-grid .lead, .enemy-grid p, .ai .sub, .stat, .ai .finding, .card, .switch, '
+          + '.tworow .txt, .tworow .media, .twoline, .work-blurbs p, .work .logo-grid, .audit-grid > div, .chatcard, .footrule, .footrow, .footmeta';
+  var nodes = Array.prototype.slice.call(document.querySelectorAll(sel));
+  // stagger siblings within the same parent
+  nodes.forEach(function(el){
+    el.classList.add('reveal');
+    var key = el.parentNode;
+    if(!key.__rk){ key.__rk = 0; }
+    var d = Math.min(key.__rk, 5) * 0.07;
+    key.__rk++;
+    el.style.transitionDelay = d.toFixed(2) + 's';
+  });
+
+  function countUp(el){
+    if(el.__done) return; el.__done = true;
+    var target = parseInt(el.getAttribute('data-count'), 10);
+    var node = el.firstChild; // leading text node "95"
+    var dur = 1100, start = null;
+    function tick(t){
+      if(start===null) start = t;
+      var p = Math.min(1, (t - start) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      node.nodeValue = Math.round(e * target);
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          en.target.classList.add('in');
+          var num = en.target.querySelector ? en.target.querySelector('.num[data-count]') : null;
+          if(num) countUp(num);
+          io.unobserve(en.target);
+        }
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    nodes.forEach(function(el){ io.observe(el); });
+  } else {
+    nodes.forEach(function(el){ el.classList.add('in'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.num[data-count]'), countUp);
+  }
+
+  /* ---- subtle parallax ---- */
+  var px = Array.prototype.slice.call(document.querySelectorAll('[data-parallax]'));
+  var ticking = false;
+  function update(){
+    var vh = window.innerHeight;
+    for(var i=0;i<px.length;i++){
+      var el = px[i], r = el.getBoundingClientRect();
+      if(r.bottom < -100 || r.top > vh + 100) continue;
+      var center = r.top + r.height/2;
+      var delta = (center - vh/2) / vh;            // ~ -0.5..0.5 on screen
+      var speed = parseFloat(el.getAttribute('data-parallax')) || 0;
+      el.style.transform = 'translate3d(0,' + (-delta * speed).toFixed(1) + 'px,0)';
+    }
+    ticking = false;
+  }
+  function onScroll(){ if(!ticking){ ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  window.addEventListener('resize', onScroll, { passive:true });
+  update();
+})();
+</script>
+
+<script>(function(){function p(){parent.postMessage({mpFrameHeight:document.documentElement.scrollHeight},"*");}window.addEventListener("load",p);window.addEventListener("resize",p);new ResizeObserver(p).observe(document.body);setInterval(p,1000);})();</script>
+</body>
+</html>
