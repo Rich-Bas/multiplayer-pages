@@ -611,6 +611,6 @@ function restart(){
 /* ============================ INIT ============================ */
 renderSymptoms(); renderSteps();
 </script>
-<script>(function(){function p(){parent.postMessage({mpFrameHeight:document.documentElement.scrollHeight},"*");}window.addEventListener("load",p);window.addEventListener("resize",p);new ResizeObserver(p).observe(document.body);setInterval(p,1000);})();</script>
+<script>(function(){var last=0,t=null;function send(){var h=document.documentElement.scrollHeight;if(Math.abs(h-last)>2){last=h;parent.postMessage({mpFrameHeight:h},"*");}}function p(){if(t)return;t=requestAnimationFrame(function(){t=null;send();});}window.addEventListener("load",function(){send();setTimeout(send,300);});window.addEventListener("resize",p);new ResizeObserver(p).observe(document.body);})();</script>
 </body>
 </html>
