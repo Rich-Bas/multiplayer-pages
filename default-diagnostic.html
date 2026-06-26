@@ -407,7 +407,12 @@ function go(n){
   STATE.step=n;
   document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", +s.dataset.step===n));
   renderSteps();
-  window.scrollTo({top:0,behavior:"smooth"});
+  if(window.self!==window.top){
+    try{parent.postMessage({mpScrollTop:true},"*");}catch(e){}
+    setTimeout(function(){try{parent.postMessage({mpScrollTop:true},"*");}catch(e){}},120);
+  } else {
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
 }
 
 /* ============================ STEP 2: symptoms ============================ */
