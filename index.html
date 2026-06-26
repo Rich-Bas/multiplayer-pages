@@ -486,6 +486,25 @@
 })();
 </script>
 
-<script>(function(){function p(){parent.postMessage({mpFrameHeight:document.documentElement.scrollHeight},"*");}window.addEventListener("load",p);window.addEventListener("resize",p);new ResizeObserver(p).observe(document.body);setInterval(p,1000);})();</script>
+<script>(function(){
+  var framed = false;
+  try{ framed = window.self!==window.top; }catch(e){ framed = true; }
+  function p(){parent.postMessage({mpFrameHeight:document.documentElement.scrollHeight},"*");}
+  window.addEventListener("load",p);window.addEventListener("resize",p);
+  new ResizeObserver(p).observe(document.body);setInterval(p,1000);
+  if(framed){
+    document.addEventListener("click",function(e){
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if(!a) return;
+      var id = a.getAttribute("href").slice(1);
+      if(!id) return; // bare "#" link, ignore
+      var target = document.getElementById(id);
+      if(!target) return;
+      e.preventDefault();
+      var offset = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 70);
+      try{ parent.postMessage({ mpScrollTo: offset }, "*"); }catch(err){}
+    });
+  }
+})();</script>
 </body>
 </html>
