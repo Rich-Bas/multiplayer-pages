@@ -501,7 +501,7 @@
       var target = document.getElementById(id);
       if(!target) return;
       e.preventDefault();
-      var offset = Math.max(0, target.getBoundingClientRect().top + window.scrollY - 70);
+      var offset = Math.max(0, target.getBoundingClientRect().top + window.scrollY);
       try{ parent.postMessage({ mpScrollTo: offset }, "*"); }catch(err){}
     });
   }
